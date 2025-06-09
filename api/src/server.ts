@@ -26,7 +26,6 @@ const app = express();
       [days - 1]
     );
     
-    // Convert string values to numbers for the frontend
     const formattedRows = rows.map(row => ({
       ...row,
       avgLead: parseFloat(row.avg_lead_days),
@@ -38,7 +37,6 @@ const app = express();
     res.json(formattedRows);
   });
 
-  // Enhanced Earthquake Daily KPI endpoint
   app.get("/api/quakes/kpis", async (req, res) => {
     const days = Math.max(1, Number(req.query.days ?? "7"));
     const { rows } = await db.query(
@@ -52,7 +50,6 @@ const app = express();
       [days - 1]
     );
     
-    // Convert string values to numbers for the frontend
     const formattedRows = rows.map(row => ({
       ...row,
       totalCount: parseInt(row.total_count || 0),
@@ -74,7 +71,6 @@ const app = express();
     res.json(formattedRows);
   });
 
-  // New Earthquake Hourly KPI endpoint
   app.get("/api/quakes/kpis/hourly", async (req, res) => {
     const hours = Math.max(1, Number(req.query.hours ?? "24"));
     const { rows } = await db.query(
@@ -86,7 +82,6 @@ const app = express();
          ORDER BY hour_start`
     );
     
-    // Convert string values to numbers for the frontend
     const formattedRows = rows.map(row => ({
       ...row,
       totalCount: parseInt(row.total_count || 0),
@@ -110,38 +105,31 @@ const app = express();
     res.json({ ok: true });
   });
 
-  // --- wrap Express in a plain HTTP server so WS can attach ---
   const server = http.createServer(app);
   const wss = new WebSocketServer({ server, path: "/ws" });
 
   wss.on("connection", (socket) => {
     console.log("WS client connected, total =", wss.clients.size);
 
-    /* push the most recent snapshot immediately (optional)
-       – easiest is to query kpi_daily for today and send once */
-
     socket.on("close", () =>
       console.log("WS client closed, total =", wss.clients.size)
     );
   });
 
-  /* broadcast helper for supply chain KPIs */
   bus.on(KPI_EVENT, (data: KpiPayload) => {
     const payload = JSON.stringify({ type: 'kpi', data });
     wss.clients.forEach((ws) => ws.readyState === ws.OPEN && ws.send(payload));
   });
 
-  /* broadcast helper for earthquake daily KPIs */
   bus.on(QUAKE_KPI_EVENT, (data: QuakeKpiPayload) => {
     const payload = JSON.stringify({ type: 'quake_kpi', data });
     wss.clients.forEach((ws) => ws.readyState === ws.OPEN && ws.send(payload));
   });
 
-  /* broadcast helper for earthquake hourly KPIs */
   bus.on(QUAKE_HOURLY_KPI_EVENT, (data: QuakeHourlyKpiPayload) => {
     const payload = JSON.stringify({ type: 'quake_hourly_kpi', data });
     wss.clients.forEach((ws) => ws.readyState === ws.OPEN && ws.send(payload));
   });
 
-  server.listen(4000, () => console.log("Enhanced API+WS listening on :4000"));
+  server.listen(4000, () => console.log("API+WS listening on :4000"));
 })();

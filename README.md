@@ -1,90 +1,86 @@
-# 🌍 Earthquake Monitoring System
+# Earthquake Monitoring System
 
-A real-time earthquake monitoring dashboard powered by USGS data, built on a scalable event-streaming architecture.
+Real-time earthquake monitoring dashboard using USGS data with Kafka streaming architecture.
 
-## 🏗️ Architecture
+## Architecture
 
-This system demonstrates a complete migration from supply chain monitoring to earthquake monitoring while preserving the entire infrastructure:
+Event-driven system processing live earthquake data from USGS:
 
 - **Data Source**: USGS real-time earthquake feed (GeoJSON)
-- **Event Streaming**: Kafka for reliable message processing
-- **Data Storage**: PostgreSQL for earthquake events and KPIs
-- **Real-time Updates**: WebSocket for live dashboard updates
-- **Frontend**: React dashboard with Chart.js visualizations
-- **Deployment**: Docker Compose with Apache reverse proxy
+- **Event Streaming**: Kafka for message processing
+- **Data Storage**: PostgreSQL for events and KPIs
+- **Real-time Updates**: WebSocket for live dashboard
+- **Frontend**: React dashboard with Chart.js
+- **Deployment**: Docker Compose with Apache proxy
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker and Docker Compose
 - 2GB+ available RAM
-- Internet connection for USGS API access
+- Internet connection
 
-### Launch the System
+### Launch
 ```bash
-# Clone and navigate to the project
 git clone <repository-url>
 cd supply-chain-spotlight
 
-# Start all services
 docker-compose up -d
 
-# Wait for services to initialize (30-60 seconds)
-# Check service status
+# Wait 30-60 seconds for initialization
 docker-compose ps
 ```
 
-### Access the Dashboard
-- **Earthquake Dashboard**: http://localhost
-- **API Endpoints**: http://localhost/api/quakes/kpis
+### Access
+- **Dashboard**: http://localhost
+- **API**: http://localhost/api/quakes/kpis
 - **WebSocket**: ws://localhost/ws
 
-## 📊 Dashboard Features
+## Dashboard Features
 
-### Real-time KPI Tiles
-- **Total Earthquakes**: Count of all detected earthquakes today
-- **Average Magnitude**: Mean magnitude of all earthquakes
-- **Max Magnitude**: Highest magnitude recorded today  
-- **Major Quakes**: Count of earthquakes with magnitude ≥ 5.0
+### KPI Tiles
+- Total earthquakes today
+- Average magnitude
+- Maximum magnitude  
+- Major quakes (≥ 5.0)
+- Depth analysis (average, max, shallow count)
+- Recent activity (1h, 6h)
+- Magnitude distribution
 
-### 7-Day Trend Chart
-- Dual-axis visualization showing average and maximum magnitude trends
-- Interactive Chart.js implementation with hover details
-- Automatic updates via WebSocket every 60 seconds
+### Charts
+- 7-day trend with average/max magnitude
+- 24-hour activity patterns
+- Magnitude distribution breakdown
+- Live updates every 25 seconds
 
-### Live Status Indicator
-- 🟢 Live: Connected and receiving real-time updates
-- 🟡 Connecting: Establishing WebSocket connection
-- 🔴 Disconnected: Connection lost
+## System Components
 
-## 🔧 System Components
+### Earthquake Producer
+- Polls USGS API every 60 seconds
+- Duplicate detection and filtering
+- Kafka topic: `earthquakes_raw`
+- Processes ~2,000-4,000 events/day
 
-### Earthquake Producer (`earthquake-producer`)
-- Polls USGS API every 60 seconds for new earthquake data
-- Implements poll-and-diff pattern to avoid duplicates
-- Sends new earthquakes to `earthquakes_raw` Kafka topic
-- Handles ~2,000-4,000 events per day
+### Earthquake Consumer
+- Kafka consumer processing events
+- Stores raw data in PostgreSQL
+- Calculates KPIs every 25 seconds
+- WebSocket broadcasting
 
-### Earthquake Consumer (`earthquake-consumer`)
-- Processes earthquake events from Kafka
-- Stores raw earthquake data in PostgreSQL
-- Calculates daily KPIs (count, avg/max magnitude, major quakes)
-- Flushes KPIs every 60 seconds with WebSocket broadcast
+### API Server
+- REST endpoints for historical data
+- WebSocket server for real-time updates
+- Data type conversion for frontend
 
-### API Server (`api`)
-- REST endpoint: `/api/quakes/kpis?days=N` for historical data
-- WebSocket server on `/ws` for real-time updates
-- Automatic data type conversion for frontend compatibility
-
-### React Dashboard (`apache`)
-- Modern responsive UI with earthquake-themed styling
+### Dashboard
+- React + TypeScript frontend
 - Real-time WebSocket integration
-- Chart.js for trend visualizations
-- Served via Apache with API proxy configuration
+- Chart.js visualizations
+- Apache reverse proxy
 
-## 🗄️ Database Schema
+## Database Schema
 
-### Earthquakes Table
+### Earthquakes
 ```sql
 CREATE TABLE earthquakes (
   id        TEXT PRIMARY KEY,
@@ -98,45 +94,55 @@ CREATE TABLE earthquakes (
 );
 ```
 
-### Daily KPIs Table
+### Daily KPIs
 ```sql
 CREATE TABLE kpi_quake_daily (
-  day           DATE PRIMARY KEY,
-  total_count   INT,
-  avg_mag       NUMERIC(4,2),
-  max_mag       NUMERIC(4,1),
-  big_quakes    INT
+  day             DATE PRIMARY KEY,
+  total_count     INT,
+  avg_mag         NUMERIC(4,2),
+  max_mag         NUMERIC(4,1),
+  big_quakes      INT,
+  avg_depth       NUMERIC(5,1),
+  max_depth       NUMERIC(5,1),
+  shallow_count   INT,
+  mag_0_1         INT,
+  mag_1_2         INT,
+  mag_2_3         INT,
+  mag_3_4         INT,
+  mag_4_5         INT,
+  last_hour_count INT,
+  last_6h_count   INT
 );
 ```
 
-## 🔄 Migration from Supply Chain
+### Hourly KPIs
+```sql
+CREATE TABLE kpi_quake_hourly (
+  hour_start    TIMESTAMPTZ PRIMARY KEY,
+  total_count   INT,
+  avg_mag       NUMERIC(4,2),
+  max_mag       NUMERIC(4,1),
+  avg_depth     NUMERIC(5,1),
+  max_depth     NUMERIC(5,1),
+  shallow_count INT,
+  mag_0_1       INT,
+  mag_1_2       INT,
+  mag_2_3       INT,
+  mag_3_4       INT,
+  mag_4_5       INT,
+  mag_5_plus    INT
+);
+```
 
-This project demonstrates a complete data source migration while preserving infrastructure:
+## Development
 
-### What Changed
-- **Producer**: Polls USGS API instead of generating mock shipments
-- **Consumer**: Processes earthquake events instead of shipment events
-- **Database**: Added earthquake tables alongside existing supply chain tables
-- **Dashboard**: New earthquake-focused UI components and styling
-- **KPIs**: Earthquake-specific metrics (magnitude, count, major quakes)
-
-### What Stayed the Same
-- Kafka event streaming architecture
-- PostgreSQL database with health checks
-- WebSocket real-time communication
-- Docker Compose orchestration
-- Apache reverse proxy setup
-- React + TypeScript frontend framework
-
-## 🛠️ Development
-
-### Building Components
+### Building
 ```bash
 # Compile TypeScript
 cd producer && npx tsc
 cd api && npx tsc
 
-# Build React dashboard
+# Build dashboard
 cd dashboard && npm run build
 
 # Rebuild containers
@@ -145,60 +151,42 @@ docker-compose build
 
 ### Monitoring
 ```bash
-# View earthquake producer logs
+# View logs
 docker-compose logs -f earthquake-producer
-
-# View earthquake consumer logs  
 docker-compose logs -f earthquake-consumer
 
-# Check database
+# Database check
 docker-compose exec postgres psql -U scs -d scs -c "SELECT COUNT(*) FROM earthquakes;"
 
-# Test API
+# API test
 curl http://localhost:4000/api/quakes/kpis?days=7
 ```
 
-### Switching Between Systems
-The system supports both earthquake and supply chain monitoring:
-
-```bash
-# Run earthquake monitoring (current setup)
-docker-compose up -d earthquake-producer earthquake-consumer
-
-# Run supply chain monitoring
-docker-compose up -d producer consumer
-
-# Run both simultaneously (different topics/tables)
-docker-compose up -d
-```
-
-## 📈 Performance & Scaling
+## Performance
 
 - **Data Volume**: ~2,000-4,000 earthquakes/day
-- **API Latency**: <100ms for KPI queries
-- **WebSocket Updates**: Every 60 seconds
-- **Memory Usage**: ~500MB total across all containers
-- **Storage**: ~1MB/day for earthquake data
+- **API Latency**: <100ms for queries
+- **Updates**: Every 25 seconds
+- **Memory**: ~500MB total
+- **Storage**: ~1MB/day
 
-## 🌐 Data Source
+## Data Source
 
-**USGS Earthquake Hazards Program**
-- Feed URL: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson
-- Update Frequency: Every minute
-- Coverage: Global earthquake detection
-- Data Format: GeoJSON with earthquake properties
+USGS Earthquake Hazards Program
+- URL: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson
+- Frequency: Every minute
+- Coverage: Global
+- Format: GeoJSON
 
-## 🔒 Production Considerations
+## Production Setup
 
-- Add authentication for API endpoints
-- Implement rate limiting for USGS API calls
-- Set up monitoring and alerting
-- Configure log aggregation
-- Add SSL/TLS termination
-- Implement data retention policies
-- Add backup and disaster recovery
-
-## 🤝 Contributing
+- Add API authentication
+- Implement rate limiting
+- Configure monitoring
+- Set up log aggregation
+- Add SSL/TLS
+- Data retention policies
+- Backup and recovery
 
 1. Fork the repository
 2. Create a feature branch

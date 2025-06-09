@@ -1,4 +1,4 @@
--- Enhanced KPI schema migration
+-- KPI schema extensions
 -- Add hourly KPI tracking table
 CREATE TABLE kpi_quake_hourly (
   hour_start     TIMESTAMPTZ PRIMARY KEY,
@@ -7,7 +7,7 @@ CREATE TABLE kpi_quake_hourly (
   max_mag        NUMERIC(4,1),
   avg_depth      NUMERIC(5,1),
   max_depth      NUMERIC(5,1),
-  shallow_count  INT,  -- depth < 10km
+  shallow_count  INT,
   mag_0_1        INT,
   mag_1_2        INT, 
   mag_2_3        INT,
