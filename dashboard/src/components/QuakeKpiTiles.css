@@ -1,0 +1,64 @@
+/* Enhanced Earthquake KPI Tiles */
+.kpi-tiles-container {
+  margin-bottom: 2rem;
+}
+
+.kpi-tiles-container h2 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.kpi-tiles {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.kpi-tiles.primary .kpi-tile {
+  background: #f8f9fa;
+  border: 2px solid #dc3545;
+}
+
+.kpi-tiles.secondary .kpi-tile {
+  background: #f8f9fa;
+  border: 1px solid #6c757d;
+}
+
+.kpi-tile {
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  min-width: 150px;
+  flex: 1;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #dc3545;
+}
+
+.kpi-tiles.secondary .kpi-value {
+  font-size: 1.5rem;
+  color: #495057;
+}
+
+@media (max-width: 768px) {
+  .kpi-tiles {
+    flex-direction: column;
+  }
+  
+  .kpi-tile {
+    min-width: unset;
+  }
+} 

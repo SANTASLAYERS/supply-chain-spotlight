@@ -28,7 +28,9 @@ services:
     ports: ["5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001_init.sql
+      - ./db/002_earthquakes.sql:/docker-entrypoint-initdb.d/002_earthquakes.sql
+      - ./db/003_enhanced_kpis.sql:/docker-entrypoint-initdb.d/003_enhanced_kpis.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U scs"]
       interval: 5s
@@ -65,6 +67,26 @@ services:
     environment:
       - NODE_ENV=production
     command: ["node", "dist/index.js"]
+
+  earthquake-producer:
+    build: ./producer
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+    command: ["node", "dist/earthquakeProducer.js"]
+
+  earthquake-consumer:
+    build: ./api
+    depends_on: 
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+    command: ["node", "dist/earthquakeConsumer.js"]
 
   apache:
     build: 

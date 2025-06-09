@@ -10,4 +10,45 @@ export type KpiPayload = {
   lateCount: number;
   totalCount: number;
 };
-export const KPI_EVENT = "kpi_update"; 
+export const KPI_EVENT = "kpi_update";
+
+// Enhanced Earthquake KPI payload
+export type QuakeKpiPayload = {
+  ts: string;           // ISO timestamp of flush
+  day: string;          // YYYY-MM-DD
+  totalCount: number;
+  avgMag: number;
+  maxMag: number;
+  bigQuakes: number;    // count of mag >= 5.0
+  // Enhanced metrics
+  avgDepth: number;
+  maxDepth: number;
+  shallowCount: number; // depth < 10km
+  mag0to1: number;
+  mag1to2: number;
+  mag2to3: number;
+  mag3to4: number;
+  mag4to5: number;
+  lastHourCount: number;
+  last6hCount: number;
+};
+export const QUAKE_KPI_EVENT = "quake_kpi";
+
+// Hourly Earthquake KPI payload
+export type QuakeHourlyKpiPayload = {
+  ts: string;           // ISO timestamp of flush
+  hour: string;         // YYYY-MM-DD HH:00:00
+  totalCount: number;
+  avgMag: number;
+  maxMag: number;
+  avgDepth: number;
+  maxDepth: number;
+  shallowCount: number;
+  mag0to1: number;
+  mag1to2: number;
+  mag2to3: number;
+  mag3to4: number;
+  mag4to5: number;
+  mag5plus: number;
+};
+export const QUAKE_HOURLY_KPI_EVENT = "quake_hourly_kpi"; 
