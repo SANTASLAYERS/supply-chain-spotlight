@@ -1,0 +1,36 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.tile {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tile .value {
+  display: block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.tile .label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+} 

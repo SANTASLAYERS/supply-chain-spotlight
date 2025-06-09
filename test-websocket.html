@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test for Supply Chain Spotlight</h1>
+    <div id="status">Connecting...</div>
+    <h2>Messages:</h2>
+    <div id="messages"></div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:4000/ws');
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+
+        ws.onopen = () => {
+            statusDiv.textContent = 'Connected to WebSocket';
+            statusDiv.style.color = 'green';
+        };
+
+        ws.onmessage = (event) => {
+            const message = document.createElement('div');
+            message.style.marginBottom = '10px';
+            message.style.padding = '10px';
+            message.style.backgroundColor = '#f0f0f0';
+            message.style.borderRadius = '5px';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            message.innerHTML = `<strong>${timestamp}:</strong><br><pre>${JSON.stringify(JSON.parse(event.data), null, 2)}</pre>`;
+            
+            messagesDiv.insertBefore(message, messagesDiv.firstChild);
+        };
+
+        ws.onerror = (error) => {
+            statusDiv.textContent = 'WebSocket Error';
+            statusDiv.style.color = 'red';
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            statusDiv.textContent = 'WebSocket Disconnected';
+            statusDiv.style.color = 'orange';
+        };
+    </script>
+</body>
+</html> 

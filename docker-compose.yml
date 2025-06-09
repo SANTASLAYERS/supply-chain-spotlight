@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   zookeeper:
     image: bitnami/zookeeper:3.9
@@ -11,20 +10,70 @@ services:
     depends_on: [zookeeper]
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
       - ALLOW_PLAINTEXT_LISTENER=yes
-    ports: ["9092:9092"]
+    ports: 
+      - "9092:9092"
+      - "29092:29092"
 
   postgres:
-    image: bitnami/postgresql:15
+    image: postgres:15-alpine
     environment:
-      - POSTGRESQL_USERNAME=scs
-      - POSTGRESQL_PASSWORD=scs
-      - POSTGRESQL_DATABASE=scs
+      - POSTGRES_USER=scs
+      - POSTGRES_PASSWORD=scs
+      - POSTGRES_DB=scs
     ports: ["5432:5432"]
     volumes:
-      - postgres_data:/bitnami/postgresql
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./api
+    depends_on: 
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+    ports: ["4000:4000"]
+
+  consumer:
+    build: ./api
+    depends_on: 
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+    command: ["node", "dist/index.js"]
+
+  producer:
+    build: ./producer
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+    command: ["node", "dist/index.js"]
+
+  apache:
+    build: 
+      context: .
+      dockerfile: ./apache/Dockerfile
+    depends_on: [api]
+    ports: ["80:80"]
 
 volumes:
   postgres_data:
+
+

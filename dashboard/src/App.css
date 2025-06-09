@@ -1,0 +1,89 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+main {
+  width: 100%;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.ws-status {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: #f0f0f0;
+  font-weight: 500;
+}
+
+.ws-status.connected {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.ws-status.connecting {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.ws-status.disconnected {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Chart container */
+canvas {
+  margin-top: 2rem;
+  max-height: 400px;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
